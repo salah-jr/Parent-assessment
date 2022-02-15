@@ -1,19 +1,19 @@
 version: "3.7"
 
 networks:
-  {{app-name}}:
+  assessment:
 
 services:
   nginx:
     image: library/nginx:stable-alpine
-    container_name: nginx
+    container_name: parent-nginx
     ports:
       - "8060:80"
     depends_on:
       - "php"
       - "postgres"
     networks:
-      - {{app-name}}
+      - assessment
     volumes:
     - ./src/app:/var/www/html
     - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
@@ -21,21 +21,21 @@ services:
   postgres:
     image: library/postgres:alpine
     restart: unless-stopped
-    container_name: postgres
+    container_name: parent-postgres
     ports:
       - "3000:5432"
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
-      POSTGRES_DB: {{db-name}}
+      POSTGRES_DB: parent
     networks:
-      - {{app-name}}
+      - assessment
     volumes:
       - ./postgres:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: pgadmin
+    container_name: parent-pgadmin
     ports:
       - "82:80"
     depends_on:
@@ -44,16 +44,16 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@mail.com
       PGADMIN_DEFAULT_PASSWORD: root
     networks:
-      - {{app-name}}
+      - assessment
 
   php:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: php
+    container_name: parent-php
     volumes:
       - ./src/app:/var/www/html
     ports:
       - "9000:9000"
     networks:
-      - {{app-name}}
+      - assessment
